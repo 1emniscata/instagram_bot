@@ -1,9 +1,12 @@
 import time
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 from auth_data import username, password
 import traceback
 import sys
+import requests
+import os
 
 
 class Bot:
@@ -45,12 +48,25 @@ class Bot:
 
 
     def close_browser(self):
+
         self.browser.close()
         self.browser.quit()
         print("Bot did it's job successfully!")
 
 
+    def xpath_exists(self, xpath):
+
+        browser = self.browser
+        try:
+            browser.find_element_by_xpath(xpath)
+            exist = True
+        except NoSuchElementException:
+            exist = False
+        return exist
+
+
     def like_by_hashtag(self, hashtag):
+
         self.hashtag = hashtag
         browser = self.browser
         try:
@@ -110,8 +126,6 @@ class Bot:
             posts_links = [item.get_attribute('href') for item in items if '/p/' in item.get_attribute('href')]
             time.sleep(5)
 
-            # items = browser.find_elements_by_tag_name('a')
-            # posts_links = [item.get_attribute('href') for item in items if '/p/' in item.get_attribute('href')]
             for post in posts_links[0:3]:
                 browser.get(post)
                 time.sleep(3)
@@ -128,9 +142,76 @@ class Bot:
             print(Value)
             print(Trace)
 
+
+    def get_all_posts_urls(self, profile):  #unfinished
+
+        browser = self.browser
+        try:
+            browser.get(profile)
+            # if self.xpath_exists('')  Add XPATH
+            time.sleep(3)
+
+            for i in range(2):
+                browser.execute_script('window.scroll(0, document.body.scrollHeight);')
+                time.sleep(3)
+
+            items = browser.find_elements_by_tag_name('a')
+            posts_links = [item.get_attribute('href') for item in items if '/p/' in item.get_attribute('href')]
+            time.sleep(5)
+            for i in posts_links[:5]:
+                print(i)
+        except Exception as err:
+            print(err)
+            Type, Value, Trace = sys.exc_info()
+            # traceback.print_exception(Type, Value, Trace)  # Have some questions
+            print(Type)
+            print(Value)
+            print(Trace)
+
+    def download_content(self, profile):
+
+        browser = self.browser
+        try:
+            browser.get(profile)
+            time.sleep(3)
+
+            for i in range(2):
+                browser.execute_script('window.scroll(0, document.body.scrollHeight);')
+                time.sleep(3)
+
+            items = browser.find_elements_by_tag_name('a')
+            posts_links = [item.get_attribute('href') for item in items if '/p/' in item.get_attribute('href')]
+            time.sleep(5)
+
+            img_src = '/html/body/div[1]/section/main/div/div[1]/article/div[2]/div/div/div[1]/img'
+            video_src = '/html/body/div[1]/section/main/div/div[1]/article/div[2]/div/div/div[1]/div/div/video'
+            img_and_video_list = []
+
+            for post in posts_links[:8]:
+                if self.xpath_exists(img_src):
+                    img = browser.find_element_by_xpath('img_src').get_attribute('src')
+                    img_and_video_list.append(img)
+                elif self.xpath_exists(video_src):
+                    video = browser.find_element_by_xpath(video_src).get_attribute('src')
+                    img_and_video_list.append(video)
+                else:
+                    print("I don't know what happened")
+
+            elements = requests.get()
+
+        except Exception as err:
+            print(err)
+            Type, Value, Trace = sys.exc_info()
+            # traceback.print_exception(Type, Value, Trace)  # Have some questions
+            print(Type)
+            print(Value)
+            print(Trace)
+
+
 a = Bot(username, password)
 a.login()
 # a.like_by_hashtag('tesla')
-a.like_by_profile('https://www.instagram.com/tesla_official/')
+# a.like_by_profile('https://www.instagram.com/tesla_official/')
+a.get_all_posts_urls('https://www.instagram.com/tesla_official/')
 a.close_browser()
 
