@@ -47,6 +47,7 @@ class Bot:
     def close_browser(self):
         self.browser.close()
         self.browser.quit()
+        print("Bot did it's job successfully!")
 
 
     def like_by_hashtag(self, hashtag):
@@ -72,12 +73,16 @@ class Bot:
                 time.sleep(3)
                 if like_button:
                     # print('Это вывелось?')
-                    if browser.find_element_by_class_name(
-                        '_8-yf5 '
-                        ).get_attribute('aria-label') == 'Нравится':
+                    # if browser.find_element_by_class_name(
+                    #     '_8-yf5 '
+                    #     ).get_attribute('aria-label') == 'Нравится':
+
+                    # Think about it
+                    if browser.find_element_by_class_name('_8-yf5 '):
                         like_button.click()
                         print('Должно было нажаться')
                 time.sleep(3)
+                # print(browser.find_element_by_class_name('_8-yf5 ').get_attribute('aria-label').value)
 
                 # time.sleep(3)
                 # print("I've put a like on this:", post)
@@ -88,11 +93,44 @@ class Bot:
             # traceback.print_exception(Type, Value, Trace)  # Have some questions
             print(Type)
             print(Value)
+            print(Trace)
 
 
+    def like_by_profile(self, profile):
+        browser = self.browser
+        try:
+            browser.get(profile)
+            time.sleep(3)
+
+            for i in range(2):
+                browser.execute_script('window.scroll(0, document.body.scrollHeight);')
+                time.sleep(3)
+
+            items = browser.find_elements_by_tag_name('a')
+            posts_links = [item.get_attribute('href') for item in items if '/p/' in item.get_attribute('href')]
+            time.sleep(5)
+
+            # items = browser.find_elements_by_tag_name('a')
+            # posts_links = [item.get_attribute('href') for item in items if '/p/' in item.get_attribute('href')]
+            for post in posts_links[0:3]:
+                browser.get(post)
+                time.sleep(3)
+                like_button = browser.find_element_by_xpath(
+                    '/html/body/div[1]/section/main/div/div[1]/article/div[3]/section[1]/span[1]/button')
+                time.sleep(3)
+                like_button.click()
+                time.sleep(3)
+        except Exception as err:
+            print(err)
+            Type, Value, Trace = sys.exc_info()
+            # traceback.print_exception(Type, Value, Trace)  # Have some questions
+            print(Type)
+            print(Value)
+            print(Trace)
 
 a = Bot(username, password)
 a.login()
-a.like_by_hashtag('tesla')
+# a.like_by_hashtag('tesla')
+a.like_by_profile('https://www.instagram.com/tesla_official/')
 a.close_browser()
 
