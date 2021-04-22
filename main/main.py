@@ -3,10 +3,8 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 from auth_data import username, password
-import traceback
 import sys
 import requests
-import os
 
 
 class Bot:
@@ -207,6 +205,7 @@ class Bot:
             print(Value)
             print(Trace)
 
+#Something
 
 a = Bot(username, password)
 a.login()
