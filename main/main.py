@@ -1,3 +1,4 @@
+import os
 import time
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
@@ -144,66 +145,110 @@ class Bot:
     def get_all_posts_urls(self, profile):  #unfinished
 
         browser = self.browser
-        try:
-            browser.get(profile)
-            # if self.xpath_exists('')  Add XPATH
+        profile_id = profile.split('/')[-2]
+        browser.get(profile)
+        # if self.xpath_exists('')  Add XPATH
+        time.sleep(3)
+
+        for i in range(2):
+            browser.execute_script('window.scroll(0, document.body.scrollHeight);')
             time.sleep(3)
 
-            for i in range(2):
-                browser.execute_script('window.scroll(0, document.body.scrollHeight);')
-                time.sleep(3)
+        items = browser.find_elements_by_tag_name('a')
+        posts_links = list(set([item.get_attribute('href') for item in items if '/p/' in item.get_attribute('href')]))
+        print('Is it true:', len(posts_links) == len(set(posts_links)))
+        print(len(set(posts_links)))
+        time.sleep(5)
 
-            items = browser.find_elements_by_tag_name('a')
-            posts_links = [item.get_attribute('href') for item in items if '/p/' in item.get_attribute('href')]
-            time.sleep(5)
-            for i in posts_links[:5]:
-                print(i)
-        except Exception as err:
-            print(err)
-            Type, Value, Trace = sys.exc_info()
-            # traceback.print_exception(Type, Value, Trace)  # Have some questions
-            print(Type)
-            print(Value)
-            print(Trace)
+        with open(f'{profile_id}_set.txt', 'w') as file:
+            for post in posts_links:
+                file.write(post + '\n')
+
+        # print(posts_links[0].split('/'))
+        # except Exception as err:
+        #     print(err)
+        #     Type, Value, Trace = sys.exc_info()
+        #     # traceback.print_exception(Type, Value, Trace)  # Have some questions
+        #     print(Type)
+        #     print(Value)
+        #     print(Trace)
+
 
     def download_content(self, profile):
 
         browser = self.browser
-        try:
-            browser.get(profile)
-            time.sleep(3)
+        self.get_all_posts_urls(profile)
+        profile_name = profile.split('/')[-2]
 
-            for i in range(2):
-                browser.execute_script('window.scroll(0, document.body.scrollHeight);')
-                time.sleep(3)
+        if os.path.exists(f'{profile_name}'):
+            print('Such directory is already exists')
+        else:
+            os.mkdir(profile_name)
 
-            items = browser.find_elements_by_tag_name('a')
-            posts_links = [item.get_attribute('href') for item in items if '/p/' in item.get_attribute('href')]
+        with open(f'{profile_name}_set.txt') as file:
+            posts_links = file.readlines()
+            time.sleep(5)
+            # img_src = '/html/body/div[1]/section/main/div/div[1]/article/div[2]/div/div/div[1]/img'
+            # img_src = '//*[@id="react-root"]/section/main/div/div[1]/article/div[2]/div/div/div[1]/img'
+            img_src = "/html/body/div[1]/section/main/div/div[1]/article/div[2]/div/div/div[1]/img"
+            # '//*[@id="react-root"]/section/main/div/div[1]/article/div[2]/div/div[1]/div[2]/div/div/div/ul/li[2]/div/div/div/div[1]/img'
+            # '/html/body/div[1]/section/main/div/div[1]/article/div[2]/div/div/div[1]/img'
+            # video_src = '/html/body/div[1]/section/main/div/div[1]/article/div[2]/div/div/div[1]/div/div/video'
+            video_src = '//*[@id="react-root"]/section/main/div/div[1]/article/div[2]/div/div/div[1]/div/div/video'
+            img_and_video_list = []
             time.sleep(5)
 
-            img_src = '/html/body/div[1]/section/main/div/div[1]/article/div[2]/div/div/div[1]/img'
-            video_src = '/html/body/div[1]/section/main/div/div[1]/article/div[2]/div/div/div[1]/div/div/video'
-            img_and_video_list = []
+            for post in posts_links[6:10]:
+                try:
+                    browser.get(post)
+                    post_id = post.split('/')[-2]
+                    time.sleep(5)
+                    print('Xpath exists:', self.xpath_exists(img_src))
+                    time.sleep(5)
+                    # print(browser.find_element_by_xpath(img_src))
+                    #     img_src_url = browser.find_element_by_xpath(img_src).get_attribute("src")
+                    if self.xpath_exists(img_src):
+                        img = browser.find_element_by_xpath(img_src).get_attribute('src')
+                        img_and_video_list.append(img)
+                        get_img = requests.get(img)
 
-            for post in posts_links[:8]:
-                if self.xpath_exists(img_src):
-                    img = browser.find_element_by_xpath('img_src').get_attribute('src')
-                    img_and_video_list.append(img)
-                elif self.xpath_exists(video_src):
-                    video = browser.find_element_by_xpath(video_src).get_attribute('src')
-                    img_and_video_list.append(video)
-                else:
-                    print("I don't know what happened")
+                        if os.path.exists(f'{profile_name}/imgs'):
+                            print('This directory already exists')
+                        else:
+                            os.mkdir(f'{profile_name}/imgs')
+                        print(f'The img from {post_id} downloaded')
 
-            elements = requests.get()
+                        with open(f'{profile_name}/imgs/{post_id}_img.jpg', 'wb') as img_file:
+                            img_file.write(get_img.content)
+                            print('All ok')
 
-        except Exception as err:
-            print(err)
-            Type, Value, Trace = sys.exc_info()
-            # traceback.print_exception(Type, Value, Trace)  # Have some questions
-            print(Type)
-            print(Value)
-            print(Trace)
+                    elif self.xpath_exists(video_src):
+                        video = browser.find_element_by_xpath(video_src).get_attribute('src')
+                        img_and_video_list.append(video)
+                        get_video = requests.get(video_src)
+
+                        if os.path.exists(f'{profile_name}/videos'):
+                            print('This directory already exists')
+                        else:
+                            os.mkdir(f'{profile_name}/videos')
+
+                        with open(f'{profile_name}/videos/{post_id}_video.mp4', 'wb') as video_file:
+                            for chunk in get_video.iter_content(chunk_size=1024 * 1024):  #THINK ABOUT IT
+                                if chunk:
+                                    video_file.write(chunk)
+                                    print(f'The video from {post_id} downloaded')
+                    else:
+                        print("I don't know what happened")
+                except Exception as err:
+                    print(err)
+                    Type, Value, Trace = sys.exc_info()
+                    # traceback.print_exception(Type, Value, Trace)  # Have some questions
+                    print(Type)
+                    print(Value)
+                    print(Trace)
+
+
+
 
 #Something
 
@@ -211,6 +256,7 @@ a = Bot(username, password)
 a.login()
 # a.like_by_hashtag('tesla')
 # a.like_by_profile('https://www.instagram.com/tesla_official/')
-a.get_all_posts_urls('https://www.instagram.com/tesla_official/')
+# a.get_all_posts_urls('https://www.instagram.com/tesla_official/')
+a.download_content('https://www.instagram.com/tesla_official/')
 a.close_browser()
 
