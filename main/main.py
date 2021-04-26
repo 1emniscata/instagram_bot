@@ -50,7 +50,7 @@ class Bot:
 
         self.browser.close()
         self.browser.quit()
-        print("Bot did it's job successfully!")
+        # print("Bot did it's job successfully!")
 
 
     def xpath_exists(self, xpath):
@@ -156,8 +156,8 @@ class Bot:
 
         items = browser.find_elements_by_tag_name('a')
         posts_links = list(set([item.get_attribute('href') for item in items if '/p/' in item.get_attribute('href')]))
-        print('Is it true:', len(posts_links) == len(set(posts_links)))
-        print(len(set(posts_links)))
+        # print('Is it true:', len(posts_links) == len(set(posts_links)))
+        # print(len(set(posts_links)))
         time.sleep(5)
 
         with open(f'{profile_id}_set.txt', 'w') as file:
@@ -194,16 +194,19 @@ class Bot:
             # '//*[@id="react-root"]/section/main/div/div[1]/article/div[2]/div/div[1]/div[2]/div/div/div/ul/li[2]/div/div/div/div[1]/img'
             # '/html/body/div[1]/section/main/div/div[1]/article/div[2]/div/div/div[1]/img'
             # video_src = '/html/body/div[1]/section/main/div/div[1]/article/div[2]/div/div/div[1]/div/div/video'
-            video_src = '//*[@id="react-root"]/section/main/div/div[1]/article/div[2]/div/div/div[1]/div/div/video'
+            # video_src = '//*[@id="react-root"]/section/main/div/div[1]/article/div[2]/div/div/div[1]/div/div/video'
+            video_src = '/html/body/div[6]/div[2]/div/article/div[2]/div/div/div[1]/div/div/video'  # There is a problem
             img_and_video_list = []
             time.sleep(5)
 
-            for post in posts_links[6:10]:
+            for post in posts_links[:10]:
                 try:
                     browser.get(post)
                     post_id = post.split('/')[-2]
                     time.sleep(5)
-                    print('Xpath exists:', self.xpath_exists(img_src))
+                    # print('Xpath exists:', self.xpath_exists(img_src))
+                    print('Xpath of video exists:', self.xpath_exists(video_src))
+
                     time.sleep(5)
                     # print(browser.find_element_by_xpath(img_src))
                     #     img_src_url = browser.find_element_by_xpath(img_src).get_attribute("src")
@@ -248,6 +251,42 @@ class Bot:
                     print(Trace)
 
 
+    def get_all_following_urls(self, profile):
+        browser = self.browser
+        try:
+            browser.get(profile)
+
+            following_button = browser.find_element_by_xpath('/html/body/div[1]/section/main/div/header/section/ul/li[3]/a')
+            following_button.click()
+            following_count = int(following_button.text.split(' ')[0])
+            # print(following_count)
+            time.sleep(5)
+
+            # following_ul = browser.find_element_by_xpath('/html/body/div[4]/div/div/div[2]')
+            following_ul = browser.find_element_by_xpath('/html/body/div[6]/div/div/div[2]/ul')
+            following_urls = []
+
+            for i in range(following_count+1):
+                browser.execute_script("arguments[0].scrollTop = arguments[0].scrollHeight", following_ul)
+                time.sleep(3)
+
+            all_following_uls = following_ul.find_elements_by_tag_name('li')
+
+            for ul in all_following_uls:
+                following_urls.append(ul.find_element_by_tag_name('a').get_attribute('href'))
+
+            for url in following_urls[:2]:
+                browser.get(url)
+                print("I'm on that post:", url)
+
+
+        except Exception as err:
+            print(err)
+
+
+
+
+
 
 
 #Something
@@ -258,5 +297,6 @@ a.login()
 # a.like_by_profile('https://www.instagram.com/tesla_official/')
 # a.get_all_posts_urls('https://www.instagram.com/tesla_official/')
 a.download_content('https://www.instagram.com/tesla_official/')
+# a.get_all_following_urls('https://www.instagram.com/tesla_official/')
 a.close_browser()
 
