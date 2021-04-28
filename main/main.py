@@ -15,43 +15,39 @@ class Bot:
         self.password = password
         self.browser = webdriver.Chrome('../chrome/chromedriver')
 
-
     def login(self):
-            browser = self.browser
-            browser.get('https://www.instagram.com/')
+        browser = self.browser
+        browser.get('https://www.instagram.com/')
+        time.sleep(5)
+
+        try:
+            username_input = browser.find_element_by_name('username')
+            username_input.clear()
+            username_input.send_keys(username)
+
+            time.sleep(3)
+
+            password_input = browser.find_element_by_name('password')
+            password_input.clear()
+            password_input.send_keys(password)
+            password_input.send_keys(Keys.ENTER)
+
             time.sleep(5)
 
-            try:
-                username_input = browser.find_element_by_name('username')
-                username_input.clear()
-                username_input.send_keys(username)
-
-                time.sleep(3)
-
-                password_input = browser.find_element_by_name('password')
-                password_input.clear()
-                password_input.send_keys(password)
-                password_input.send_keys(Keys.ENTER)
-
-                time.sleep(5)
-
-                button = browser.find_element_by_xpath('//*[@id="react-root"]/section/main/div/div/div/div/button')
-                time.sleep(3)
-                button.send_keys(Keys.ENTER)  # Save the login and password
-                button2 = browser.find_element_by_xpath('/html/body/div[4]/div/div/div/div[3]/button[2]')
-                time.sleep(5)
-                button2.send_keys(Keys.ENTER)  # Notifications
-                time.sleep(5)
-            except Exception as err:
-                print(err)
-
+            button = browser.find_element_by_xpath('//*[@id="react-root"]/section/main/div/div/div/div/button')
+            time.sleep(3)
+            button.send_keys(Keys.ENTER)  # Save the login and password
+            button2 = browser.find_element_by_xpath('/html/body/div[4]/div/div/div/div[3]/button[2]')
+            time.sleep(5)
+            button2.send_keys(Keys.ENTER)  # Notifications
+            time.sleep(5)
+        except Exception as err:
+            print(err)
 
     def close_browser(self):
-
         self.browser.close()
         self.browser.quit()
         # print("Bot did it's job successfully!")
-
 
     def xpath_exists(self, xpath):
 
@@ -62,7 +58,6 @@ class Bot:
         except NoSuchElementException:
             exist = False
         return exist
-
 
     def like_by_hashtag(self, hashtag):
 
@@ -79,7 +74,6 @@ class Bot:
             items = browser.find_elements_by_tag_name('a')
             posts_links = [item.get_attribute('href') for item in items if '/p/' in item.get_attribute('href')]
             time.sleep(5)
-
 
             for post in posts_links[2:4]:
                 browser.get(post)
@@ -109,7 +103,6 @@ class Bot:
             print(Type)
             print(Value)
             print(Trace)
-
 
     def like_by_profile(self, profile):
         browser = self.browser
@@ -141,9 +134,7 @@ class Bot:
             print(Value)
             print(Trace)
 
-
-    def get_all_posts_urls(self, profile):  #unfinished
-
+    def get_all_posts_urls(self, profile):  # Unfinished
         browser = self.browser
         profile_id = profile.split('/')[-2]
         browser.get(profile)
@@ -173,9 +164,7 @@ class Bot:
         #     print(Value)
         #     print(Trace)
 
-
     def download_content(self, profile):
-
         browser = self.browser
         self.get_all_posts_urls(profile)
         profile_name = profile.split('/')[-2]
@@ -236,7 +225,7 @@ class Bot:
                             os.mkdir(f'{profile_name}/videos')
 
                         with open(f'{profile_name}/videos/{post_id}_video.mp4', 'wb') as video_file:
-                            for chunk in get_video.iter_content(chunk_size=1024 * 1024):  #THINK ABOUT IT
+                            for chunk in get_video.iter_content(chunk_size=1024 * 1024):  # THINK ABOUT IT
                                 if chunk:
                                     video_file.write(chunk)
                                     print(f'The video from {post_id} downloaded')
@@ -250,13 +239,13 @@ class Bot:
                     print(Value)
                     print(Trace)
 
-
     def get_all_following_urls(self, profile):
         browser = self.browser
         try:
             browser.get(profile)
 
-            following_button = browser.find_element_by_xpath('/html/body/div[1]/section/main/div/header/section/ul/li[3]/a')
+            following_button = browser.find_element_by_xpath(
+                '/html/body/div[1]/section/main/div/header/section/ul/li[3]/a')
             following_button.click()
             following_count = int(following_button.text.split(' ')[0])
             # print(following_count)
@@ -278,18 +267,9 @@ class Bot:
             for url in following_urls[:2]:
                 browser.get(url)
                 print("I'm on that post:", url)
-
-
         except Exception as err:
             print(err)
 
-
-
-
-
-
-
-#Something
 
 a = Bot(username, password)
 a.login()
@@ -299,4 +279,3 @@ a.login()
 a.download_content('https://www.instagram.com/tesla_official/')
 # a.get_all_following_urls('https://www.instagram.com/tesla_official/')
 a.close_browser()
-
