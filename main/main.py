@@ -6,9 +6,12 @@ from selenium.webdriver.common.keys import Keys
 from auth_data import username, password
 import sys
 import requests
+import datetime
 
 
 class Bot:
+
+    start_time = datetime.datetime.now()
 
     def __init__(self, username, password):
         self.username = username
@@ -18,29 +21,38 @@ class Bot:
     def login(self):
         browser = self.browser
         browser.get('https://www.instagram.com/')
-        time.sleep(5)
+        # time.sleep(5)
+        browser.implicitly_wait(5)
 
         try:
+            if self.xpath_exists('/html/body/div[2]/div/div/button[1]'):
+                button = browser.find_element_by_xpath('/html/body/div[2]/div/div/button[1]').click()
+
             username_input = browser.find_element_by_name('username')
             username_input.clear()
             username_input.send_keys(username)
 
-            time.sleep(3)
+            # time.sleep(3)
+            browser.implicitly_wait(5)
 
             password_input = browser.find_element_by_name('password')
             password_input.clear()
             password_input.send_keys(password)
             password_input.send_keys(Keys.ENTER)
 
-            time.sleep(5)
+            # time.sleep(5)
+            browser.implicitly_wait(5)
 
             button = browser.find_element_by_xpath('//*[@id="react-root"]/section/main/div/div/div/div/button')
-            time.sleep(3)
+            # time.sleep(3)
+            browser.implicitly_wait(3)
             button.send_keys(Keys.ENTER)  # Save the login and password
             button2 = browser.find_element_by_xpath('/html/body/div[4]/div/div/div/div[3]/button[2]')
-            time.sleep(5)
+            # time.sleep(5)
+            browser.implicitly_wait(5)
             button2.send_keys(Keys.ENTER)  # Notifications
-            time.sleep(5)
+            # time.sleep(5)
+            browser.implicitly_wait(5)
         except Exception as err:
             print(err)
 
@@ -65,15 +77,18 @@ class Bot:
         browser = self.browser
         try:
             browser.get(f'https://www.instagram.com/explore/tags/{hashtag}/')
-            time.sleep(3)
+            # time.sleep(3)
+            browser.implicitly_wait(3)
 
             for i in range(3):
                 browser.execute_script('window.scroll(0, document.body.scrollHeight);')
-                time.sleep(4)
+                # time.sleep(4)
+                browser.implicitly_wait(3)
 
             items = browser.find_elements_by_tag_name('a')
             posts_links = [item.get_attribute('href') for item in items if '/p/' in item.get_attribute('href')]
-            time.sleep(5)
+            # time.sleep(5)
+            browser.implicitly_wait(5)
 
             for post in posts_links[2:4]:
                 browser.get(post)
@@ -90,7 +105,8 @@ class Bot:
                     if browser.find_element_by_class_name('_8-yf5 '):
                         like_button.click()
                         print('Должно было нажаться')
-                time.sleep(3)
+                # time.sleep(3)
+                browser.implicitly_wait(3)
                 # print(browser.find_element_by_class_name('_8-yf5 ').get_attribute('aria-label').value)
 
                 # time.sleep(3)
@@ -108,24 +124,34 @@ class Bot:
         browser = self.browser
         try:
             browser.get(profile)
-            time.sleep(3)
+            # time.sleep(3)
+            browser.implicitly_wait(3)
 
             for i in range(2):
                 browser.execute_script('window.scroll(0, document.body.scrollHeight);')
-                time.sleep(3)
+                # time.sleep(3)
+                browser.implicitly_wait(3)
 
             items = browser.find_elements_by_tag_name('a')
             posts_links = [item.get_attribute('href') for item in items if '/p/' in item.get_attribute('href')]
-            time.sleep(5)
+            # time.sleep(5)
+            browser.implicitly_wait(5)
 
             for post in posts_links[0:3]:
                 browser.get(post)
-                time.sleep(3)
+                # time.sleep(3)
+                browser.implicitly_wait(3)
                 like_button = browser.find_element_by_xpath(
                     '/html/body/div[1]/section/main/div/div[1]/article/div[3]/section[1]/span[1]/button')
-                time.sleep(3)
+                # time.sleep(3)
+                browser.implicitly_wait(3)
                 like_button.click()
-                time.sleep(3)
+                print(f"I've put a like to: {post}")
+                # time.sleep(3)
+                browser.implicitly_wait(3)
+
+            finish_time = datetime.datetime.now()
+            print(finish_time - self.start_time)
         except Exception as err:
             print(err)
             Type, Value, Trace = sys.exc_info()
@@ -271,11 +297,12 @@ class Bot:
             print(err)
 
 
+
 a = Bot(username, password)
 a.login()
 # a.like_by_hashtag('tesla')
-# a.like_by_profile('https://www.instagram.com/tesla_official/')
+a.like_by_profile('https://www.instagram.com/tesla_official/')
 # a.get_all_posts_urls('https://www.instagram.com/tesla_official/')
-a.download_content('https://www.instagram.com/tesla_official/')
+# a.download_content('https://www.instagram.com/tesla_official/')
 # a.get_all_following_urls('https://www.instagram.com/tesla_official/')
 a.close_browser()
